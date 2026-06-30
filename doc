@@ -1,0 +1,46 @@
+CC peripheral
+Peripheral type:
+pinout
+
+API
+pinsConnected()
+Returns a table showing which pins are currently connected to common.
+local states = p.pinsConnected()
+print(states[1]) -- true/false
+print(states[9]) -- always true
+Pin 9 always reports as connected because it is the common/reference terminal.
+
+connectPin(pinOrTable)
+Connects one or more pins to common.
+p.connectPin(1)
+p.connectPin({2, 3, 4})
+Only pins 1–8 can be contolled.
+
+disconnectPin(pinOrTable)
+Disconnects one or more pins from common.
+p.disconnectPin(1)
+p.disconnectPin({2, 3, 4})
+Again, only pins 1–8 can be controlled.
+
+comparePin(pin)
+Returns the voltage difference between the given pin and pin 9/common.
+print(p.comparePin(1))
+This is equivalent to:
+print(p.comparePin(1, 9))
+
+comparePin(pin, referencePin)
+Returns the voltage difference between two pins.
+print(p.comparePin(1, 5))
+This returns:
+voltage(pin 1) - voltage(pin 5)
+
+pinsVoltage()
+Returns a table of all pin voltages relative to pin 9/common.
+local volts = p.pinsVoltage()
+print(volts[1])
+print(volts[2])
+
+pinsVoltage(referencePin)
+Returns a table of all pin voltages relative to another pin.
+local volts = p.pinsVoltage(1)
+print(volts[9])
