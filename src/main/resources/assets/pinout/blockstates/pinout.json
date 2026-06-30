@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "pinout:block/pinout" },
+    "facing=east":  { "model": "pinout:block/pinout", "y": 90 },
+    "facing=south": { "model": "pinout:block/pinout", "y": 180 },
+    "facing=west":  { "model": "pinout:block/pinout", "y": 270 }
+  }
+}
