@@ -4,30 +4,28 @@ import com.breakdown.pinout.registry.ModBlockEntities;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.utility.Lang;
-
+import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
 
 @MethodsReturnNonnullByDefault
@@ -82,6 +80,10 @@ public class PinoutBlock extends HorizontalElectricBlock implements IBE<PinoutBl
             box(0, 0, 12, 16, 5, 16)
     );
 
+    private static float pinContactResistance() {
+        return ResistanceValues.get(ModdedBlocks.PUNCH_CARD_READER.get());
+    }
+
     public PinoutBlock(Properties properties) {
         super(properties);
 
@@ -113,7 +115,9 @@ public class PinoutBlock extends HorizontalElectricBlock implements IBE<PinoutBl
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Resistance.switchResistance(resistance(), player, tooltip);
+        tooltip.add(Component.literal("DEBUG: Pinout tooltip method called")
+            .withStyle(ChatFormatting.RED));
+        Resistance.switchResistance(pinContactResistance(), player, tooltip);
     }
 
     @Override

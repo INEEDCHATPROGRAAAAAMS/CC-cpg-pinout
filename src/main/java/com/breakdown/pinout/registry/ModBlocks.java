@@ -1,8 +1,7 @@
 package com.breakdown.pinout.registry;
-
+import com.breakdown.pinout.content.pinout.PinoutBlockItem;
 import com.breakdown.pinout.PinoutMod;
 import com.breakdown.pinout.content.pinout.PinoutBlock;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -27,9 +26,9 @@ public class ModBlocks {
             )
     );
 
-    public static final DeferredHolder<Item, BlockItem> PINOUT_ITEM =
-            ITEMS.register("pinout", () -> new BlockItem(
-                    PINOUT.get(),
+    public static final DeferredHolder<Item, PinoutBlockItem> PINOUT_ITEM =
+            ITEMS.register("pinout", () -> new PinoutBlockItem(
+                    (PinoutBlock)PINOUT.get(),
                     new Item.Properties()
             ));
 }

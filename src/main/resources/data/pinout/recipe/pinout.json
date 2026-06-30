@@ -1,0 +1,27 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": true,
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "powergrid:conductive_casing"
+    },
+    "M": {
+      "item": "create:electron_tube"
+    },
+    "Z": {
+      "tag": "c:plates/zinc"
+    },
+    "n": {
+      "tag": "c:nuggets/copper"
+    }
+  },
+  "pattern": [
+    " ZMZ ",
+    "nnCnn"
+  ],
+  "result": {
+    "count": 1,
+    "id": "pinout:pinout"
+  }
+}
