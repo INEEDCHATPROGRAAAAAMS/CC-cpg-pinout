@@ -19,10 +19,6 @@ import java.util.Map;
 public class PinoutBlockEntity extends ElectricBlockEntity {
     private IElectricNode[] nodes;
     private SwitchedWire[] wires;
-
-    // Lazily initialized because Power Grid may call buildCircuit()
-    // from the superclass constructor before field initializers are safe.
-    // Indexes 0-7 represent pins 1-8.
     private boolean[] connected;
 
     public PinoutBlockEntity(BlockPos pos, BlockState state) {
@@ -80,12 +76,6 @@ public class PinoutBlockEntity extends ElectricBlockEntity {
             nodes[i] = builder.terminalNode(i);
         }
 
-        // Terminal mapping:
-        // terminal 0 = physical pin 9/common
-        // terminal 1 = physical pin 1
-        // terminal 2 = physical pin 2
-        // ...
-        // terminal 8 = physical pin 8
         IElectricNode common = nodes[0];
 
         for (int i = 0; i < 8; ++i) {
@@ -143,6 +133,98 @@ public class PinoutBlockEntity extends ElectricBlockEntity {
             wires[index].setState(state);
         }
 
+        markPinStateChanged();
+    }
+
+    /**
+     * Set multiple pins in one operation.
+     *
+     * Only pins included in the map are changed.
+     * Pins not included are left as-is.
+     *
+     * This is useful for CC:Tweaked code which needs several pins to change
+     * during one peripheral call instead of doing disconnect/connect cycles.
+     */
+    public void setPinsConnected(Map<Integer, Boolean> states) {
+        ensureConnectedArray();
+
+        boolean changed = false;
+
+        for (var entry : states.entrySet()) {
+            int pin = entry.getKey();
+            boolean state = entry.getValue();
+
+            validateControlledPin(pin);
+
+            int index = pin - 1;
+
+            if (connected[index] != state) {
+                connected[index] = state;
+                changed = true;
+            }
+        }
+
+        if (!changed) {
+            return;
+        }
+
+        applyAllWireStates();
+        markPinStateChanged();
+    }
+
+    /**
+     * Set all controllable pins 1-8 at once using a byte.
+     *
+     * bit 0 -> pin 1
+     * bit 1 -> pin 2
+     * bit 2 -> pin 3
+     * bit 3 -> pin 4
+     * bit 4 -> pin 5
+     * bit 5 -> pin 6
+     * bit 6 -> pin 7
+     * bit 7 -> pin 8
+     */
+    public void setByte(int value) {
+        if (value < 0 || value > 255) {
+            throw new IllegalArgumentException("Byte value must be between 0 and 255");
+        }
+
+        ensureConnectedArray();
+
+        boolean changed = false;
+
+        for (int pin = 1; pin <= 8; pin++) {
+            int bitIndex = pin - 1;
+            boolean state = ((value >> bitIndex) & 1) == 1;
+            int index = pin - 1;
+
+            if (connected[index] != state) {
+                connected[index] = state;
+                changed = true;
+            }
+        }
+
+        if (!changed) {
+            return;
+        }
+
+        applyAllWireStates();
+        markPinStateChanged();
+    }
+
+    private void applyAllWireStates() {
+        if (wires == null) {
+            return;
+        }
+
+        for (int i = 0; i < 8; i++) {
+            if (wires[i] != null) {
+                wires[i].setState(connected[i]);
+            }
+        }
+    }
+
+    private void markPinStateChanged() {
         setChanged();
 
         if (level != null && !level.isClientSide) {
@@ -186,12 +268,10 @@ public class PinoutBlockEntity extends ElectricBlockEntity {
     private IElectricNode nodeForPin(int pin) {
         validatePin(pin);
 
-        // Physical pin 9 is terminal/node index 0.
         if (pin == 9) {
             return nodes[0];
         }
 
-        // Physical pins 1-8 are terminal/node indexes 1-8.
         return nodes[pin];
     }
 
@@ -203,11 +283,9 @@ public class PinoutBlockEntity extends ElectricBlockEntity {
 
         for (int i = 0; i < 8; i++) {
             connected[i] = tag.getBoolean("Pin" + (i + 1));
-
-            if (wires != null && wires[i] != null) {
-                wires[i].setState(connected[i]);
-            }
         }
+
+        applyAllWireStates();
     }
 
     @Override

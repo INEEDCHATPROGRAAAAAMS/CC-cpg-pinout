@@ -33,13 +33,11 @@ public class PinoutPeripheral implements IPeripheral {
     }
 
     @LuaFunction(mainThread = true)
-    public final Map<Integer, Double> pinsVoltage() {
-        return blockEntity.getVoltagesRelativeTo(9);
-    }
+    public final Map<Integer, Double> pinsVoltage(IArguments args) throws LuaException {
+        int referencePin = args.count() >= 1 ? args.getInt(0) : 9;
 
-    @LuaFunction(mainThread = true)
-    public final Map<Integer, Double> pinsVoltage(int referencePin) throws LuaException {
         validateLuaPin(referencePin);
+
         return blockEntity.getVoltagesRelativeTo(referencePin);
     }
 
@@ -62,6 +60,68 @@ public class PinoutPeripheral implements IPeripheral {
     @LuaFunction(mainThread = true)
     public final void disconnectPin(IArguments args) throws LuaException {
         forEachPinArgument(args, false);
+    }
+
+    /**
+     * Set multiple pins in one Lua peripheral call.
+     *
+     * Example:
+     *
+     * p.setPins({
+     *   [1] = true,
+     *   [2] = false,
+     *   [3] = true,
+     * })
+     *
+     * Pins not included in the table are left unchanged.
+     */
+    @LuaFunction(mainThread = true)
+    public final void setPins(IArguments args) throws LuaException {
+        Object value = args.get(0);
+
+        if (!(value instanceof Map<?, ?> table)) {
+            throw new LuaException("Expected table of pin states");
+        }
+
+        Map<Integer, Boolean> states = new LinkedHashMap<>();
+
+        for (var entry : table.entrySet()) {
+            int pin = luaPinKeyToInt(entry.getKey());
+            boolean state = luaValueToBoolean(entry.getValue());
+
+            validateLuaControlledPin(pin);
+
+            states.put(pin, state);
+        }
+
+        blockEntity.setPinsConnected(states);
+    }
+
+    /**
+     * Set pins 1-8 from a byte in one Lua peripheral call.
+     *
+     * bit 0 -> pin 1
+     * bit 1 -> pin 2
+     * bit 2 -> pin 3
+     * bit 3 -> pin 4
+     * bit 4 -> pin 5
+     * bit 5 -> pin 6
+     * bit 6 -> pin 7
+     * bit 7 -> pin 8
+     *
+     * Example:
+     *
+     * p.setByte(0)
+     * p.setByte(255)
+     * p.setByte(0b10101010)
+     */
+    @LuaFunction(mainThread = true)
+    public final void setByte(int value) throws LuaException {
+        if (value < 0 || value > 255) {
+            throw new LuaException("Byte value must be between 0 and 255");
+        }
+
+        blockEntity.setByte(value);
     }
 
     @LuaFunction(mainThread = true)
@@ -108,6 +168,34 @@ public class PinoutPeripheral implements IPeripheral {
         } else {
             blockEntity.disconnectPin(pin);
         }
+    }
+
+    private static int luaPinKeyToInt(Object key) throws LuaException {
+        if (key instanceof Number number) {
+            return number.intValue();
+        }
+
+        if (key instanceof String string) {
+            try {
+                return Integer.parseInt(string);
+            } catch (NumberFormatException ignored) {
+                throw new LuaException("Pin keys must be numbers 1-8");
+            }
+        }
+
+        throw new LuaException("Pin keys must be numbers 1-8");
+    }
+
+    private static boolean luaValueToBoolean(Object value) throws LuaException {
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+
+        if (value instanceof Number number) {
+            return number.doubleValue() != 0.0;
+        }
+
+        throw new LuaException("Pin states must be booleans or numbers");
     }
 
     private static void validateLuaPin(int pin) throws LuaException {
