@@ -44,3 +44,16 @@ pinsVoltage(referencePin)
 Returns a table of all pin voltages relative to another pin.
 local volts = p.pinsVoltage(1)
 print(volts[9])
+
+(0.2+)
+setByte(value)
+Sets all controllable pins connection status, 1–8, at the same time using an 8-bit number.
+Bit mapping:
+bit 0 -> pin 1
+bit 1 -> pin 2
+bit 2 -> pin 3
+bit 3 -> pin 4
+bit 4 -> pin 5
+bit 5 -> pin 6
+bit 6 -> pin 7
+bit 7 -> pin 8
