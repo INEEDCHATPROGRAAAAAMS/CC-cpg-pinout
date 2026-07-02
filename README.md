@@ -1,6 +1,6 @@
 This mod adds the Pinout, a fairly simply block.
 
-All it does is act as a Create: Power Grid punch card reader, combined with a voltmeter.
+All it does is act as a Create: Power Grid punch card reader, combined with a voltmeter, controllable by CC:Tweaked.
 You can connect pins to common, measure pin voltages compared to one another or common. Pretty simple.
 
 read the doc for info on how to actually use the API.
