@@ -42,6 +42,20 @@ public class PinoutPeripheral implements IPeripheral {
     }
 
     @LuaFunction(mainThread = true)
+    public final Map<Integer, Double> pinsCurrent(IArguments args) throws LuaException {
+        return blockEntity.getCurrents();
+    }
+
+    @LuaFunction(mainThread = true)
+    public final double getCurrent(IArguments args) throws LuaException {
+        int referencePin = args.count() >= 1 ? args.getInt(0) : 9;
+
+        validateLuaPin(referencePin);
+
+        return blockEntity.getCurrent(referencePin);
+    }
+
+    @LuaFunction(mainThread = true)
     public final double comparePin(IArguments args) throws LuaException {
         int pin = args.getInt(0);
         int referencePin = args.count() >= 2 ? args.getInt(1) : 9;
