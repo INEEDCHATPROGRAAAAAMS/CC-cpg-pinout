@@ -242,6 +242,25 @@ public class PinoutBlockEntity extends ElectricBlockEntity {
         return nodeForPin(pin).getVoltage();
     }
 
+    public double getCurrent(int pin) {
+        validatePin(pin);
+        if (nodes == null) {
+            return 0.0;
+        }
+
+        return nodeForPin(pin).getCurrent();
+    }
+
+    public Map<Integer, Double> getCurrents() {
+        Map<Integer, Double> result = new LinkedHashMap<>();
+
+        for (int pin = 1; pin <= 9; pin++) {
+            result.put(pin, getCurrent(pin));
+        }
+
+        return result;
+    }
+
     public double comparePin(int pin) {
         return comparePin(pin, 9);
     }
